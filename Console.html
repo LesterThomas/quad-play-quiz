@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quiz Master</title>
+</head>
+<body> 
+
+    <h3 class="text-muted">Quiz Master</h3> &nbsp; <p><a onclick="resetClicked(); return false;" href="#">Reset</a></p>
+ 
+	<div id="answers"></div>
+  
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  
+  <script type="text/javascript">
+  var socketaddy = "ws://sentiment.eu-gb.mybluemix.net/ws/answers";
+
+    var answer;
+    var sock;
+    $(document).ready(function(){
+      sock = new WebSocket(socketaddy); 
+      sock.onopen = function(){ console.log("Connected websocket");
+	      console.log("Sending ping..");
+	      sock.send("Ping!");
+	      console.log("Ping sent..");
+      };
+      sock.onerror = function(){ console.log("Websocket error"); };
+      
+      
+  	//*************************************************************************************************************
+  	//******** This is the key section - it gets called each time there is a new socket event to process
+  	//*************************************************************************************************************
+      sock.onmessage = function(evt){
+      	
+        answer = JSON.parse(evt.data);
+        
+        //just for testing - display the event on the page
+        var theHtml="<br>"   + " team: " + answer.team + ", " 
+                            + " id: " + answer.id + ", " 
+                            + " x: " + answer.x + ", "
+                            + " y: " + answer.y ;
+                            
+        $("#answers").append(theHtml);
+        }
+	});
+   
+function resetClicked(){
+	
+	$("#answers").html("");
+}   
+
+
+  </script>
+  
+	
+</body>
+</html>

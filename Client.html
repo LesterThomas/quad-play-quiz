@@ -1,0 +1,331 @@
+<!doctype html>
+<html class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <title>Quiz Client</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <!-- build:css(.) styles/vendor.css -->
+    <!-- bower:css -->
+    
+    <!-- endbower -->
+    <!-- endbuild -->
+    <!-- build:css(.tmp) styles/main.css -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular.js"></script>
+	<!-- Latest compiled and minified CSS -->
+	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+    <!-- endbuild -->
+    
+    <script>
+        
+            window.requestAnimFrame = (function(){
+            return  window.requestAnimationFrame   ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame    ||
+            function( callback ){
+                window.setTimeout(callback, 1000 / 60);
+            };
+    })();
+
+angular.module('myApp', []);
+
+angular.module('myApp').controller('MainController', function($scope) {
+    $scope.pos = {
+        x : 0,
+        y : 0
+    };
+    
+
+    $scope.id=Math.random();
+ 
+    
+    
+    	
+	
+		$scope.buildJSON = function (){
+			var httpGet="http://sentiment.eu-gb.mybluemix.net/answer?team=" + $("#team").val() + "&id=" + $scope.id +"&x=" + Math.round($scope.pos.x/2) + "&y=" + Math.round($scope.pos.y/2)
+			$.get( httpGet );
+		}
+		
+		
+		setInterval($scope.buildJSON,1000);
+
+        
+});
+
+// https://github.com/sebleedelisle/JSTouchController/blob/master/TouchControl.html
+'use strict';
+angular.module('myApp').directive('joystick', function() {
+
+    function joystickController ($scope) {
+
+    }
+
+    return {
+        restrict : 'E',
+        controller : ['$scope', function ($scope) {
+            return joystickController($scope);
+        }],
+        scope : {
+            // Using primitives here did not work, so we use an Object, see: http://stackoverflow.com/questions/14049480/what-are-the-nuances-of-scope-prototypal-prototypical-inheritance-in-angularjs
+            position : '='
+        },
+        template : '<canvas class="joystickCanvas"></canvas>',
+        link : function(scope, element) {
+
+            var joystickHeight = 400;
+            var joystickWidth  = 400;
+
+            var center = {
+                x : joystickHeight / 2,
+                y : joystickWidth / 2
+            };
+
+            var radiusCircle = 35;
+            var radiusBound = 100;
+
+            // Canvas and context element
+            var container = element[0];
+            var canvas = container.children[0];
+            var ctx = canvas.getContext('2d');
+
+            // Id of the touch on the cursor
+            var cursorTouchId = -1;
+            var cursorTouch = {
+                x : center.x,
+                y : center.y
+            };
+
+            function resetCanvas() {
+                canvas.height = joystickHeight;
+                canvas.width = joystickWidth;
+            }
+
+            function onTouchStart(event) {
+                var touch = event.targetTouches[0];
+                cursorTouchId = touch.identifier;
+                cursorTouch = {
+                    x : touch.pageX - touch.target.offsetLeft,
+                    y : touch.pageY - touch.target.offsetTop
+                };
+            }
+
+            function onTouchMove(event) {
+                // Prevent the browser from doing its default thing (scroll, zoom)
+                event.preventDefault();
+                for(var i = 0; i < event.changedTouches.length; i++){
+                    var touch = event.changedTouches[i];
+
+                    if(cursorTouchId === touch.identifier)
+                    {
+                        cursorTouch = {
+                            x : touch.pageX - touch.target.offsetLeft,
+                            y : touch.pageY - touch.target.offsetTop
+                        };
+
+                        var scaleX = radiusBound / (cursorTouch.x - center.x);
+                        var scaleY = radiusBound / (cursorTouch.y - center.y);
+
+                        if(Math.abs(scaleX) < 1) {
+                            cursorTouch.x = Math.abs(cursorTouch.x - center.x) * scaleX + center.x;
+                        }
+
+                        if (Math.abs(scaleY) < 1) {
+                            cursorTouch.y = Math.abs(cursorTouch.y - center.y) * scaleY + center.y;
+                        }
+
+                        scope.$apply(
+                            scope.position = {
+                                x : Math.round(((cursorTouch.x - center.x)/radiusBound) * 200),
+                                y : Math.round(((cursorTouch.y - center.y)/radiusBound) * -200)
+                            }
+                        );
+
+                        break;
+                    }
+                }
+
+            }
+
+            function onTouchEnd() {
+
+                cursorTouchId = -1;
+
+                scope.$apply(
+                    scope.position = {
+                        x : 0,
+                        y : 0
+                    }
+                );
+
+                cursorTouch.x = center.x;
+                cursorTouch.y = center.y;
+            }
+
+            function draw() {
+                // Clear the canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.beginPath();
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 5;
+                ctx.arc(center.x, center.y, radiusCircle, 0, Math.PI*2, true);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.strokeStyle = 'grey';
+                ctx.lineWidth = 2;
+                ctx.arc(center.x, center.y- radiusBound, radiusCircle, 0, Math.PI*2, true);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.strokeStyle = 'grey';
+                ctx.lineWidth = 2;
+                ctx.arc(center.x, center.y+ radiusBound, radiusCircle, 0, Math.PI*2, true);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.strokeStyle = 'grey';
+                ctx.lineWidth = 2;
+                ctx.arc(center.x- radiusBound, center.y, radiusCircle, 0, Math.PI*2, true);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.strokeStyle = 'grey';
+                ctx.lineWidth = 2;
+                ctx.arc(center.x+ radiusBound, center.y, radiusCircle, 0, Math.PI*2, true);
+                ctx.stroke();
+                
+                /*ctx.beginPath();
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 2;
+                ctx.arc(center.x, center.y, radiusBound, 0, Math.PI*2, true);
+                ctx.stroke();*/
+
+                ctx.beginPath();
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 2;
+                ctx.arc(cursorTouch.x, cursorTouch.y, radiusCircle, 0, Math.PI*2, true);
+                ctx.stroke();
+
+                requestAnimFrame(draw);
+            }
+
+            // Check if touch is enabled
+            var touchable = true;
+
+            if(touchable) {
+                canvas.addEventListener( 'touchstart', onTouchStart, false );
+                canvas.addEventListener( 'touchmove', onTouchMove, false );
+                canvas.addEventListener( 'touchend', onTouchEnd, false );
+
+                window.onorientationchange = resetCanvas;
+                window.onresize = resetCanvas;
+            }
+
+            // Bind to the values from outside as well
+            scope.$watch('position', function(newval) {
+                cursorTouch = {
+                    x : ((newval.x * radiusBound) / 200) + center.x,
+                    y : ((newval.y * radiusBound) / -200) + center.y
+                };
+            });
+
+            resetCanvas();
+            draw();
+
+        }
+
+    };
+
+});
+        
+    </script>
+  </head>
+  <body>
+    <!--[if lt IE 10]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+
+    <div class="container">
+      <div class="header">
+        <ul class="nav nav-pills pull-right">
+          <!--<li class="active"><a href="#" id="question">Refresh</a></li>
+          <li><a href="#">Hello</a></li>
+          <li><a href="#">Letser</a></li>-->
+        </ul>
+        <h3 class="text-muted">Quiz client</h3>
+      </div>
+
+
+
+      <div class="container">
+	  	
+	    <style type="text/css">
+            option.red {background-color: #cc0000; font-weight: bold; font-size: 12px;}
+            option.green {background-color: #00CC00; font-weight: bold; font-size: 12px;}
+        </style>
+        <table>
+            <tr>
+                <td> 
+                    <h4>Team: &nbsp;</h4> </td>
+                <td>
+                    <select name="team" id="team">
+                        <option class="red" value= "Red">Red</option>
+                        <option class="green" value= "Green">Green</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+                  
+        
+ 
+	</div>
+	
+			
+
+
+        <div ng-app="myApp">
+            <div ng-controller="MainController">
+        
+
+                <joystick position="pos"></joystick>
+
+            </div>
+        </div>
+
+          
+
+
+    </div>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> 
+
+    <!-- build:js(.) scripts/vendor.js -->
+    <!-- bower:js -->
+    <!-- endbower -->
+    <!-- endbuild -->
+
+    <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+    <script>
+      (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+      function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+      e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+      e.src='//www.google-analytics.com/analytics.js';
+      r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+      ga('create','UA-XXXXX-X');ga('send','pageview');
+    </script>
+
+
+	<!-- Latest compiled and minified JavaScript -->
+	
+
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
