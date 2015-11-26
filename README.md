@@ -1,7 +1,7 @@
 Quad-play quiz
 ==============
 
-This is game that consists of teams of 4 people, each with a smart-phone webApp (client.html) and master console app (master.html). The teams attempt to answer multiple-choice questions with answers a,b,c,d. The twist is: The teams must work in silence, and they choose the answer using the joystick on the smartphone app. It is the aggregate of the 4 players that is shown on the master console.
+This is game that consists of teams of 4 people, each with a smart-phone webApp (client.html) and master console app (console.html). The teams attempt to answer multiple-choice questions with answers a,b,c,d. The twist is: The teams must work in silence, and they choose the answer using the joystick on the smartphone app. It is the aggregate of the 4 players that is shown on the master console.
 
 The client app has a joystick that allows the user to move towards one of 4 positions. 
 
